@@ -1,0 +1,61 @@
+<html>
+
+<head>
+  <title>Express</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.2/leaflet.css" integrity="sha512-UkezATkM8unVC0R/Z9Kmq4gorjNoFwLMAWR/1yZpINW08I79jEKx/c8NlLSvvimcu7SL8pgeOnynxfRpe+5QpA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css" integrity="sha512-vJfMKRRm4c4UupyPwGUZI8U651mSzbmmPgR3sdE3LcwBPsdGeARvUM5EcSTg34DK8YIRiIo+oJwNfZPMKEQyug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<!-- Initialize Leaflet => Bisa menampilkan map & control -->
+
+<body>
+  <div id="map" style="height: 500px; width: 100%"></div>
+
+  <h1>List Misi</h1>
+  <ul id="listMisi">
+    <!-- List-list misi dari database -->
+  </ul>
+
+  <button type="button" onclick="downloadGeoJSON()">Download GeoJSON</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.2/leaflet.js" integrity="sha512-KMraOVM0qMVE0U1OULTpYO4gg5MZgazwPAPyMQWfOkEshpwlLQFCHZ/0lBXyviDNVL+pBGwmeXQnuvGK8Fscvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" integrity="sha512-ozq8xQKq6urvuU6jNgkfqAmT7jKN2XumbrX1JiB3TnF7tI48DPI4Gy1GXKD/V3EExgAs1V+pRO7vwtS1LHg0Gw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script>
+    fetch('/api/geojson')
+        .then(data => {
+            data.json().then(resp => {
+                resp.forEach((element, i) => {
+                    console.log(element)
+                  $('#listMisi').append(`<li>${i}, <a href="/api/geojson/delete/${i}">Hapus</a></li>`)
+                });
+            })
+        })
+
+  		var map = L.map('map', {drawControl: true}).setView([51.505, -0.09], 13);
+     
+		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
+
+		// FeatureGroup is to store editable layers
+		var drawnItems = new L.FeatureGroup();
+
+		// Simpan hasil gambar ke variable drawnItems
+		map.on("draw:created", e => {
+			drawnItems.addLayer(e.layer);
+		})
+
+		drawnItems.addTo(map)
+
+
+		function downloadGeoJSON() {
+			console.log(drawnItems.toGeoJSON())
+		}
+  </script>
+</body>
+
+</html>
